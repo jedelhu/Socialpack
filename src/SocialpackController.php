@@ -1,37 +1,92 @@
 <?php
 namespace Jedelhu\Socialpack;
+
 use App\Http\Controllers\Controller;
 use Abraham\TwitterOAuth\TwitterOAuth;
 use Illuminate\Http\Request;
 use Session;
 use Facebook;
+
+
 class SocialpackController extends Controller
 {
     private $fb;
+
     public function index()
     {
         return view('socialpacks::index');
     }
-    public function loginTwitter(Request $request)
+
+    public function loginTwitter($data)
     {
         if (!Session::has('access_token')) {
+
             $connection = new TwitterOAuth(config('socialpacks.composer_key'), config('socialpacks.composer_secret'));
-            $request_token = $connection->oauth('oauth/request_token', array('oauth_callback' => url('/') . '/callbackTwitter'));
+            $callback_url = url('/') . '/callbackTwitter';
+            $request_token = $connection->oauth('oauth/request_token', array('oauth_callback' => (string)$callback_url));
+
             Session::put('oauth_token', $request_token['oauth_token']);
             Session::put('oauth_token_secret', $request_token['oauth_token_secret']);
             $url = $connection->url('oauth/authorize', array('oauth_token' => $request_token['oauth_token']));
+
             return redirect()->away($url);
         } else {
             $access_token = Session::get('access_token');
+
             $connection = new TwitterOAuth(config('socialpacks.composer_key'), config('socialpacks.composer_secret'), $access_token['oauth_token'], $access_token['oauth_token_secret']);
-            // getting basic user info
-            $user = $connection->get("account/verify_credentials");
-            // printing username on screen
-            return view('socialpacks::logintwitter', compact('user'));
+
+
+            if (isset($data) && !empty($data)) {
+                if (isset($data['profile']) && !empty($data['profile'])) {
+                    if ($data['profile'] == "yes") {
+                        // getting basic user info
+                        $user = $connection->get("account/verify_credentials");
+                        return $user;
+
+                    }
+                }
+                if (isset($data['post_tweet']) && !empty($data['post_tweet'])) {
+                    if ($data['post_tweet']["show"] == "yes") {
+                        // posting tweet on user profile
+                        $post = $connection->post('statuses/update', array('status' => $data['post_tweet']["message"]));
+                        return $post;
+
+                    }
+                }
+
+                if (isset($data['recent_tweets']) && !empty($data['recent_tweets'])) {
+                    if ($data['recent_tweets']["show"] == "yes") {
+                        // getting recent tweeets by user 'snowden' on twitter
+                        $tweets = $connection->get('statuses/user_timeline', ['count' => 200, 'exclude_replies' => true, 'screen_name' => 'snowden', 'include_rts' => false]);
+                        $totalTweets[] = $tweets;
+                        $page = 0;
+
+                        for ($count = 200; $count < 500; $count += 200) {
+                            $max = count($totalTweets[$page]) - 1;
+                            $tweets = $connection->get('statuses/user_timeline', ['count' => 200, 'exclude_replies' => true, 'max_id' => $totalTweets[$page][$max]->id_str, 'screen_name' => 'snowden', 'include_rts' => false]);
+                            $totalTweets[] = $tweets;
+                            $page += 1;
+                        }
+                        return $totalTweets;
+                        // printing recent tweets on screen
+//                $start = 1;
+//                foreach ($totalTweets as $page) {
+//                    foreach ($page as $key) {
+//                        echo $start . ':' . $key->text . '<br>';
+//                        $start++;
+//                    }
+//                }
+
+                    }
+                }
+
+            }
         }
     }
+
     public function callbackTwitter()
     {
+
         if (isset($_REQUEST['oauth_verifier'], $_REQUEST['oauth_token']) && $_REQUEST['oauth_token'] == Session::get('oauth_token')) {
             $request_token = [];
             $request_token['oauth_token'] = Session::get('oauth_token');
@@ -42,25 +97,36 @@ class SocialpackController extends Controller
             return redirect('/socialpacks/twitter');
         }
     }
+
+
     public function logoutTwitter()
     {
+
         Session::forget('oauth_token');
         Session::forget('oauth_token_secret');
         Session::forget('twkey');
         Session::forget('twsecret');
         Session::forget('access_token');
+
         return redirect('/socialpacks');
     }
+
+
     public function loginFacebook()
     {
-        session_start();
+        $data=Session::get('data');
+
         $fb = new Facebook\Facebook([
             'app_id' => config('socialpacks.app_id'),
             'app_secret' => config('socialpacks.app_secret'),
             'default_graph_version' => config('socialpacks.default_graph_version'),
         ]);
+
+
         $helper = $fb->getRedirectLoginHelper();
-        $permissions = ['user_birthday', 'user_location', 'user_website', 'email', 'user_friends', 'user_posts', 'user_photos','publish_pages','user_education_history','user_about_me','publish_actions']; // optional
+        $callback_url = url('/') . '/loginFacebook';
+        $permissions = ['user_birthday', 'user_location', 'user_website', 'email', 'user_friends', 'user_posts', 'user_photos', 'publish_pages', 'user_education_history', 'user_about_me', 'publish_actions']; // optional
+
         try {
             if (Session::has('facebook_access_token')) {
                 $accessToken = $_SESSION['facebook_access_token'];
@@ -70,30 +136,38 @@ class SocialpackController extends Controller
         } catch (Facebook\Exceptions\FacebookResponseException $e) {
             // When Graph returns an error
             echo 'Graph returned an error: ' . $e->getMessage();
+
             exit;
         } catch (Facebook\Exceptions\FacebookSDKException $e) {
             // When validation fails or other local issues
             echo 'Facebook SDK returned an error: ' . $e->getMessage();
             exit;
         }
+
         if (isset($accessToken)) {
             if (isset($_SESSION['facebook_access_token'])) {
                 $fb->setDefaultAccessToken($_SESSION['facebook_access_token']);
             } else {
                 // getting short-lived access token
                 $_SESSION['facebook_access_token'] = (string)$accessToken;
+
                 // OAuth 2.0 client handler
                 $oAuth2Client = $fb->getOAuth2Client();
+
                 // Exchanges a short-lived access token for a long-lived one
                 $longLivedAccessToken = $oAuth2Client->getLongLivedAccessToken($_SESSION['facebook_access_token']);
+
                 $_SESSION['facebook_access_token'] = (string)$longLivedAccessToken;
+
                 // setting default access token to be used in script
                 $fb->setDefaultAccessToken($_SESSION['facebook_access_token']);
             }
+
             // redirect the user back to the same page if it has "code" GET variable
 //            if (isset($_GET['code'])) {
 //                header('Location: ./');
 //            }
+
             // validating the access token
             try {
                 $request = $fb->get('/me');
@@ -102,7 +176,7 @@ class SocialpackController extends Controller
                 if ($e->getCode() == 190) {
                     unset($_SESSION['facebook_access_token']);
                     $helper = $fb->getRedirectLoginHelper();
-                    $loginUrl = $helper->getLoginUrl(url('/') . '/loginFacebook', $permissions);
+                    $loginUrl = $helper->getLoginUrl((string) $callback_url, $permissions);
                     echo "<script>window.top.location.href='" . $loginUrl . "'</script>";
                 }
                 exit;
@@ -111,23 +185,87 @@ class SocialpackController extends Controller
                 echo 'Facebook SDK returned an error: ' . $e->getMessage();
                 exit;
             }
-//            $this->getProfileInfoFacebook($fb);
-//            $this->getFiendsFacebook($fb);
-//            $this->getProfileImageFacebook($fb);
-//            $this->getPublishPostFacebook($fb);
-//            $this->getLikePagesFacebook($fb);
-//            $this->getAllPhotosFacebook($fb);
-//            $this->postOnTimelineFacebook($fb);
-//            $this->postImageOnTimelineFacebook($fb);
+
+
+            if (isset($data) && !empty($data)) {
+                if (isset($data['profile']) && !empty($data['profile'])) {
+                    if ($data['profile'] == "yes") {
+//                      $this->getProfileInfoFacebook($fb);
+                        $profile=$this->getProfileInfoFacebook($fb);
+                        return $profile;
+                    }
+                }
+                if (isset($data['friends']) && !empty($data['friends'])) {
+                    if ($data['friends'] == "yes") {
+//                       $this->getFiendsFacebook($fb);
+                        $friends=$this->getFiendsFacebook($fb);
+                        return $friends;
+                    }
+                }
+                if (isset($data['profile_image']) && !empty($data['profile_image'])) {
+                    if ($data['profile_image'] == "yes") {
+//                       $this->getProfileImageFacebook($fb);
+                        $profile_image=$this->getProfileImageFacebook($fb);
+                        return $profile_image;
+                    }
+                }
+                if (isset($data['published_post']) && !empty($data['published_post'])) {
+                    if ($data['published_post'] == "yes") {
+
+//                        $this->getPublishPostFacebook($fb);
+                        $published_post=$this->getPublishPostFacebook($fb);
+                        return $published_post;
+                    }
+                }
+                if (isset($data['like_pages']) && !empty($data['like_pages'])) {
+                    if ($data['like_pages'] == "yes") {
+//                        $this->getLikePagesFacebook($fb);
+                        $like_pages=$this->getLikePagesFacebook($fb);
+                        return $like_pages;
+                    }
+                }
+                if (isset($data['all_photos']) && !empty($data['all_photos'])) {
+                    if ($data['all_photos'] == "yes") {
+//                        $this->getAllPhotosFacebook($fb);
+                        $all_photos=$this->getAllPhotosFacebook($fb);
+                        return $all_photos;
+                    }
+                }
+                if (isset($data['published_post']) && !empty($data['published_post'])) {
+                    if ($data['published_post'] == "yes") {
+//                       $this->getPublishPostFacebook($fb);
+                        $published_post=$this->getPublishPostFacebook($fb);
+                        return $published_post;
+                    }
+                }
+                if (isset($data['post_timeline']) && !empty($data['post_timeline'])) {
+                    if ($data['post_timeline']["show"] == "yes") {
+                        $post_timeline=$this->postOnTimelineFacebook($fb, $data['post_timeline']["message"]);
+                        return $post_timeline;
+                    }
+                }
+
+                if (isset($data['post_image_timeline']) && !empty($data['post_image_timeline'])) {
+                    if ($data['post_image_timeline']["show"] == "yes") {
+                        $post_image_timeline=$this->postImageOnTimelineFacebook($fb, $data['post_timeline']["message"], $data['post_timeline']["url"]);
+                        return $post_image_timeline;
+                    }
+                }
+
+
+            }
             // Now you can redirect to another page and use the access token from $_SESSION['facebook_access_token']
+
 //            return view('socialpacks::loginfacebook', compact('profile','friendsfb','picture'));
         } else {
-            $helper = $fb->getRedirectLoginHelper();
+//            $helper = $fb->getRedirectLoginHelper();
             // replace your website URL same as added in the developers.facebook.com/apps e.g. if you used http instead of https and you used non-www version or www version of your website then you must add the same here
-            $loginUrl = $helper->getLoginUrl(url('/') . '/loginFacebook', $permissions);
+            $loginUrl = $helper->getLoginUrl((string) $callback_url, $permissions);
             echo '<a href="' . $loginUrl . '">Log in with Facebook!</a>';
         }
+
     }
+
     public function getProfileInfoFacebook($fb)
     {
         // getting basic info about user
@@ -146,9 +284,16 @@ class SocialpackController extends Controller
             echo 'Facebook SDK returned an error: ' . $e->getMessage();
             exit;
         }
+
         // printing $profile array on the screen which holds the basic info about user
+//        echo '<pre>';
+//        print_r($profile);
+//        echo '</pre>';
+        return $profile;
 //        dd($profile);
+
     }
+
     public function getFiendsFacebook($fb)
     {
         // get list of friends' names
@@ -164,6 +309,7 @@ class SocialpackController extends Controller
             echo 'Facebook SDK returned an error: ' . $e->getMessage();
             exit;
         }
+
         // if have more friends than 100 as we defined the limit above on line no. 68
         $friendsfb = array();
         if ($fb->next($friends)) {
@@ -184,10 +330,12 @@ class SocialpackController extends Controller
             $totalFriends = count($allFriends);
             foreach ($allFriends as $key) {
                 $friendsfb[] = $key['name'];
-                echo $key['name'] . "<br>";
+//                echo $key['name'] . "<br>";
             }
         }
+        return $friendsfb;
     }
+
     public function getProfileImageFacebook($fb)
     {
         // getting profile picture of the user
@@ -205,14 +353,19 @@ class SocialpackController extends Controller
             echo 'Facebook SDK returned an error: ' . $e->getMessage();
             exit;
         }
+        return $picture['url'];
         // showing picture on the screen
-        echo "<img src='" . $picture['url'] . "'/>";
+//        echo "<img src='" . $picture['url'] . "'/>";
+
         // saving picture
-        $img = __DIR__ . '/' . $profile['id'] . '.jpg';
+//        $img = __DIR__ . '/' . $profile['id'] . '.jpg';
 //            file_put_contents($img, file_get_contents($picture['url']));
+
     }
+
     public function getPublishPostFacebook($fb)
     {
+
         // getting all posts published by user
         try {
             $posts_request = $fb->get('/me/posts?limit=500');
@@ -225,6 +378,7 @@ class SocialpackController extends Controller
             echo 'Facebook SDK returned an error: ' . $e->getMessage();
             exit;
         }
+
         $total_posts = array();
         $posts_response = $posts_request->getGraphEdge();
         if ($fb->next($posts_response)) {
@@ -239,22 +393,25 @@ class SocialpackController extends Controller
             $posts_response = $posts_request->getGraphEdge()->asArray();
             print_r($posts_response);
         }
+        return $posts_response;
     }
+
     public function getLikePagesFacebook($fb)
     {
         // get list of pages liked by user
         try {
             $requestLikes = $fb->get('/me/likes?limit=100');
             $likes = $requestLikes->getGraphEdge();
-        } catch(Facebook\Exceptions\FacebookResponseException $e) {
+        } catch (Facebook\Exceptions\FacebookResponseException $e) {
             // When Graph returns an error
             echo 'Graph returned an error: ' . $e->getMessage();
             exit;
-        } catch(Facebook\Exceptions\FacebookSDKException $e) {
+        } catch (Facebook\Exceptions\FacebookSDKException $e) {
             // When validation fails or other local issues
             echo 'Facebook SDK returned an error: ' . $e->getMessage();
             exit;
         }
+
         $totalLikes = array();
         if ($fb->next($likes)) {
             $likesArray = $likes->asArray();
@@ -267,47 +424,56 @@ class SocialpackController extends Controller
             $likesArray = $likes->asArray();
             $totalLikes = array_merge($totalLikes, $likesArray);
         }
+        return $totalLikes;
         // printing data on screen
-        foreach ($totalLikes as $key) {
-            echo $key['name'] . '<br>';
-        }
+//        foreach ($totalLikes as $key) {
+//            echo $key['name'] . '<br>';
+//        }
     }
-    public function postImageOnTimelineFacebook($fb){
+
+
+    public function postImageOnTimelineFacebook($fb, $msg, $url)
+    {
         //upload image in timeline
         try {
             // message must come from the user-end
-            $data = ['source' => $fb->fileToUpload(url('images/Lighthouse.jpg')), 'message' => 'my photo'];
+            $data = ['source' => $fb->fileToUpload($url), 'message' => $msg];
             $request = $fb->post('/me/photos', $data);
             $response = $request->getGraphNode()->asArray();
-        } catch(Facebook\Exceptions\FacebookResponseException $e) {
+        } catch (Facebook\Exceptions\FacebookResponseException $e) {
             // When Graph returns an error
             echo 'Graph returned an error: ' . $e->getMessage();
             exit;
-        } catch(Facebook\Exceptions\FacebookSDKException $e) {
+        } catch (Facebook\Exceptions\FacebookSDKException $e) {
             // When validation fails or other local issues
             echo 'Facebook SDK returned an error: ' . $e->getMessage();
             exit;
         }
-        echo $response['id'];
+        return $response['id'];
+//        echo $response['id'];
     }
-    public function postOnTimelineFacebook($fb){
+
+    public function postOnTimelineFacebook($fb, $msg)
+    {
         // posting on user timeline using publish_actins permission
         try {
             // message must come from the user-end
-            $data = ['message' => 'There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don\'t look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn\'t anything embarrassing hidden in the middle of text. All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary, making this the first true generator on the Internet. It uses a dictionary of over 200 Latin words, combined with a handful of model sentence structures, to generate Lorem Ipsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humour, or non-characteristic words etc.'];
+            $data = ['message' => $msg];
             $request = $fb->post('/me/feed', $data);
             $response = $request->getGraphEdge()->asArray;
-        } catch(Facebook\Exceptions\FacebookResponseException $e) {
+        } catch (Facebook\Exceptions\FacebookResponseException $e) {
             // When Graph returns an error
             echo 'Graph returned an error: ' . $e->getMessage();
             exit;
-        } catch(Facebook\Exceptions\FacebookSDKException $e) {
+        } catch (Facebook\Exceptions\FacebookSDKException $e) {
             // When validation fails or other local issues
             echo 'Facebook SDK returned an error: ' . $e->getMessage();
             exit;
         }
-        echo $response['id'];
+        return $response['id'];
+//        echo $response['id'];
     }
+
     public function getAllPhotosFacebook($fb)
     {
         // getting all photos of user
@@ -323,6 +489,7 @@ class SocialpackController extends Controller
             echo 'Facebook SDK returned an error: ' . $e->getMessage();
             exit;
         }
+
         $all_photos = array();
         if ($fb->next($photos)) {
             $photos_array = $photos->asArray();
@@ -335,10 +502,16 @@ class SocialpackController extends Controller
             $photos_array = $photos->asArray();
             $all_photos = array_merge($photos_array, $all_photos);
         }
+        $all_photo=array();
         foreach ($all_photos as $key) {
             $photo_request = $fb->get('/' . $key['id'] . '?fields=images');
             $photo = $photo_request->getGraphNode()->asArray();
+            $all_photo[]=$photo;
             echo '<img src="' . $photo['images'][2]['source'] . '"><br>';
         }
+
+        return $all_photo;
+
     }
+
 }
