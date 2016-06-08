@@ -1,5 +1,6 @@
 {
     "name": "jedelhu/socialpack",
+    "minimum-stability": "dev",
     "description": "This will allow to login and upload data on facebook and twitter",
     "keywords": ["social", "laravel","github"],
     "license": "MIT",
@@ -10,12 +11,12 @@
             "email": "jedelhu728@gmail.com"
         }
     ],
-    "minimum-stability": "dev",
     "require": {
         "php": ">=5.5.9",
         "laravel/framework": "5.2.*",
         "facebook/php-sdk-v4" : "~5.0",
-        "abraham/twitteroauth": "^0.6.4"
+        "abraham/twitteroauth": "^0.6.4",
+        "vendor/packageb": "dev-master"
     },
     "autoload": {
         "psr-4": {
