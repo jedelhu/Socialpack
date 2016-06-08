@@ -22,6 +22,6 @@
             "Jedelhu\\Socialpack\\": "src/"
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "dev"
 }
 
