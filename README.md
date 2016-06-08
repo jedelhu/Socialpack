@@ -183,7 +183,7 @@ To get Friends:
             'friends' => "yes",
                   );
 ```
-To post Profile Image:
+To get Profile Image:
 
 ```
              $data=array(
