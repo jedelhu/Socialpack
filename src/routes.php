@@ -5,7 +5,6 @@
  * Date: 6/2/2016
  * Time: 12:09 PM
  */
-
 Route::group(['middleware' => ['web']], function () {
     Route::get('socialpacks', 'jedelhu\socialpack \SocialpackController@index');
     Route::any('socialpacks/twitter', 'jedelhu\socialpack \SocialpackController@loginTwitter');
