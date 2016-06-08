@@ -1,7 +1,7 @@
 {
-    "name": "jedelhu/Socialpack",
+    "name": "jedelhu/socialpack",
     "description": "This will allow to login and upload data on facebook and twitter",
-    "keywords": ["social", "pack"],
+    "keywords": ["social", "laravel","github"],
     "license": "MIT",
     "type": "project",
     "authors": [
@@ -10,6 +10,7 @@
             "email": "jedelhu728@gmail.com"
         }
     ],
+    "minimum-stability": "dev",
     "require": {
         "php": ">=5.5.9",
         "laravel/framework": "5.2.*",
@@ -18,7 +19,7 @@
     },
     "autoload": {
         "psr-4": {
-            "jedelhu\\Socialpack\\": "src/"
+            "Jedelhu\\Socialpack\\": "src/"
         }
     }
 }
