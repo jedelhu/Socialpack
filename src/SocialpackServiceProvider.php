@@ -1,6 +1,6 @@
 <?php
 
-namespace Laraveldaily\Socialpacks;
+namespace Jedelhu\Socialpack ;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -33,7 +33,7 @@ class SocialpackServiceProvider extends ServiceProvider
     public function register()
     {
         include __DIR__.'/routes.php';
-        $this->app->make('Laraveldaily\Socialpacks\SocialpackController');
+        $this->app->make('Jedelhu\Socialpack \SocialpackController');
 
         $this->mergeConfigFrom( __DIR__.'/Config/socialpack.php', 'socialpacks');
     }
