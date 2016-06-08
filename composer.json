@@ -1,6 +1,5 @@
 {
     "name": "jedelhu/socialpack",
-    "minimum-stability": "dev",
     "description": "This will allow to login and upload data on facebook and twitter",
     "keywords": ["social", "laravel","github"],
     "license": "MIT",
@@ -22,6 +21,13 @@
         "psr-4": {
             "Jedelhu\\Socialpack\\": "src/"
         }
-    }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
 
