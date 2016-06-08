@@ -28,6 +28,18 @@ php artisan vendor:publish --provider="Jedelhu\Socialpack\SocialpackServiceProvi
 Give valid app_id and app_secret keys for both api in config\socialpack.php
 
 
+Callback function for twitter
+
+```
+http://yourdomain.com/callbackTwitter
+```
+
+Callback function for facebook
+
+```
+http://yourdomain.com/loginFacebook
+```
+
 ## Change following code in facebook sdk v4 package(to convert in laravel):
 
 Go to vendor\facebook\php-sdk-v4\src\Facebook\Helpers\FacebookRedirectLoginHelper.php on line 123,
