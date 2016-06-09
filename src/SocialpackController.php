@@ -21,7 +21,7 @@ class SocialpackController extends Controller
     {
         if (!Session::has('access_token')) {
 
-            $connection = new TwitterOAuth(config('socialpacks.composer_key'), config('socialpacks.composer_secret'));
+            $connection = new TwitterOAuth(config('socialpack.composer_key'), config('socialpack.composer_secret'));
             $callback_url = url('/') . '/callbackTwitter';
             $request_token = $connection->oauth('oauth/request_token', array('oauth_callback' => (string)$callback_url));
 
@@ -33,7 +33,7 @@ class SocialpackController extends Controller
         } else {
             $access_token = Session::get('access_token');
 
-            $connection = new TwitterOAuth(config('socialpacks.composer_key'), config('socialpacks.composer_secret'), $access_token['oauth_token'], $access_token['oauth_token_secret']);
+            $connection = new TwitterOAuth(config('socialpack.composer_key'), config('socialpack.composer_secret'), $access_token['oauth_token'], $access_token['oauth_token_secret']);
 
 
             if (isset($data) && !empty($data)) {
@@ -91,7 +91,7 @@ class SocialpackController extends Controller
             $request_token = [];
             $request_token['oauth_token'] = Session::get('oauth_token');
             $request_token['oauth_token_secret'] = Session::get('oauth_token_secret');
-            $connection = new TwitterOAuth(config('socialpacks.composer_key'), config('socialpacks.composer_secret'), $request_token['oauth_token'], $request_token['oauth_token_secret']);
+            $connection = new TwitterOAuth(config('socialpack.composer_key'), config('socialpack.composer_secret'), $request_token['oauth_token'], $request_token['oauth_token_secret']);
             $access_token = $connection->oauth("oauth/access_token", array("oauth_verifier" => $_REQUEST['oauth_verifier']));
             Session::put('access_token', $access_token);
             return redirect('/socialpacks/twitter');
@@ -117,9 +117,9 @@ class SocialpackController extends Controller
         $data=Session::get('data');
 
         $fb = new Facebook\Facebook([
-            'app_id' => config('socialpacks.app_id'),
-            'app_secret' => config('socialpacks.app_secret'),
-            'default_graph_version' => config('socialpacks.default_graph_version'),
+            'app_id' => config('socialpack.app_id'),
+            'app_secret' => config('socialpack.app_secret'),
+            'default_graph_version' => config('socialpack.default_graph_version'),
         ]);
 
 

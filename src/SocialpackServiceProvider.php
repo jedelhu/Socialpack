@@ -35,6 +35,6 @@ class SocialpackServiceProvider extends ServiceProvider
         include __DIR__.'/routes.php';
         $this->app->make('Jedelhu\Socialpack\SocialpackController');
 
-        $this->mergeConfigFrom( __DIR__.'/Config/socialpack.php', 'socialpacks');
+        $this->mergeConfigFrom( __DIR__.'/config/socialpack.php', 'socialpacks');
     }
 }
