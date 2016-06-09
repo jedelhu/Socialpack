@@ -247,3 +247,14 @@ Post Image on timeline:
                 ),
             );
 ```
+Add Article on time line:
+
+```
+             $data=array(
+                  'post_link_timeline' => "yes",
+                            array(
+                                "show" => "yes",
+                                "link" => "http://www.espn.in/football/european-championship/74/blog/post/2889086/euro-2016s-six-best-group-games-belgium-vs-italy-england-vs-wales-and-more"
+                            ),
+            );
+```
