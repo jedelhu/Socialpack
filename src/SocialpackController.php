@@ -244,6 +244,12 @@ class SocialpackController extends Controller
                         return $post_timeline;
                     }
                 }
+                if (isset($data['post_link_timeline']) && !empty($data['post_link_timeline'])) {
+                    if ($data['post_link_timeline']["show"] == "yes") {
+                        $post_timeline=$this->postLinkOnTimelineFacebook($fb, $data['post_link_timeline']["link"]);
+                        return $post_timeline;
+                    }
+                }
 
                 if (isset($data['post_image_timeline']) && !empty($data['post_image_timeline'])) {
                     if ($data['post_image_timeline']["show"] == "yes") {
@@ -459,6 +465,26 @@ class SocialpackController extends Controller
         try {
             // message must come from the user-end
             $data = ['message' => $msg];
+            $request = $fb->post('/me/feed', $data);
+            $response = $request->getGraphEdge()->asArray;
+        } catch (Facebook\Exceptions\FacebookResponseException $e) {
+            // When Graph returns an error
+            echo 'Graph returned an error: ' . $e->getMessage();
+            exit;
+        } catch (Facebook\Exceptions\FacebookSDKException $e) {
+            // When validation fails or other local issues
+            echo 'Facebook SDK returned an error: ' . $e->getMessage();
+            exit;
+        }
+        return $response['id'];
+//        echo $response['id'];
+    }
+    public function postLinkOnTimelineFacebook($fb, $link)
+    {
+        // posting on user timeline using publish_actins permission
+        try {
+            // message must come from the user-end
+            $data = ['link' => $link];
             $request = $fb->post('/me/feed', $data);
             $response = $request->getGraphEdge()->asArray;
         } catch (Facebook\Exceptions\FacebookResponseException $e) {
