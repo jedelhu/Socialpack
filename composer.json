@@ -1,5 +1,5 @@
 {
-    "name": "Laraveldaily/Socialpacks",
+    "name": "laraveldaily/socialpacks",
     "description": "This will allow to login and upload data on facebook and twitter",
     "keywords": ["social", "laravel","github"],
     "license": "MIT",
@@ -12,8 +12,7 @@
     ],
     "require": {
         "facebook/php-sdk-v4" : "~5.0",
-        "abraham/twitteroauth": "^0.6.4",
-        "vendor/packageb": "dev-master"
+        "abraham/twitteroauth": "^0.6.4"
     },
     "autoload": {
         "psr-4": {
