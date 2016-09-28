@@ -7,12 +7,12 @@
  */
 
 Route::group(['middleware' => ['web']], function () {
-    Route::get('socialpacks', 'jedelhu\socialpack\SocialpackController@index');
-    Route::any('socialpacks/twitter', 'jedelhu\socialpack\SocialpackController@loginTwitter');
-    Route::get('socialpacks/logout-twitter', 'jedelhu\socialpack\SocialpackController@logoutTwitter');
-    Route::get('callbackTwitter', 'jedelhu\socialpack\SocialpackController@callbackTwitter');
-    Route::any('loginFacebook', 'jedelhu\socialpack\SocialpackController@loginFacebook');
-    Route::get('setCredential', 'jedelhu\socialpack\SocialpackController@setCredential');
-    Route::get('socialpacks/profile-facebook', 'jedelhu\socialpack\SocialpackController@profileFacebook');
-//    Route::get('callbackFacebook', 'jedelhu\socialpack \SocialpackController@callbackFacebook');
+    Route::get('socialpacks', 'laraveldaily\socialpacks\SocialpackController@index');
+    Route::any('socialpacks/twitter', 'laraveldaily\socialpacks\SocialpackController@loginTwitter');
+    Route::get('socialpacks/logout-twitter', 'laraveldaily\socialpacks\SocialpackController@logoutTwitter');
+    Route::get('callbackTwitter', 'laraveldaily\socialpacks\SocialpackController@callbackTwitter');
+    Route::any('loginFacebook', 'laraveldaily\socialpacks\SocialpackController@loginFacebook');
+    Route::get('setCredential', 'laraveldaily\socialpacks\SocialpackController@setCredential');
+    Route::get('socialpacks/profile-facebook', 'laraveldaily\socialpacks\SocialpackController@profileFacebook');
+//    Route::get('callbackFacebook', 'laraveldaily\socialpacks \SocialpackController@callbackFacebook');
 });

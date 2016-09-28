@@ -1,5 +1,5 @@
 <?php
-namespace Jedelhu\Socialpack;
+namespace Laraveldaily\Socialpacks;
 
 use Abraham\TwitterOAuth\TwitterOAuth;
 use App\Http\Controllers\Controller;
